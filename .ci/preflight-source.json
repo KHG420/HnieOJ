@@ -1,6 +1,6 @@
 {
   "repo": "HnieOJ",
-  "base": "main",
+  "base": "develop",
   "upstream": "3da59b19720ee71cb0071d884670bc4fba9d689d",
-  "candidate": "7ddab988c85bd2057e1bdfa1a1637e6f47dbebff"
+  "candidate": "2034f610b1789641fef7054c5f3b79ea3deabfcb"
 }
