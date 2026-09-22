@@ -1,6 +1,7 @@
 <template>
   <div class="contest-detail-container">
     <n-spin :show="loading">
+      <n-alert v-if="error" type="error" :bordered="false" style="margin-bottom: 12px">{{ error }}</n-alert>
       
       <n-card :bordered="false" class="header-card" :style="{ borderLeft: `6px solid ${statusStyle.descColor}` }">
         <div class="header-content">
@@ -93,8 +94,8 @@ const route = useRoute();
 const router = useRouter();
 const message = useMessage();
 
-const { 
-  loading, detail, contestStatus, timeText, progressPercentage, fetchContestDetail 
+const {
+  loading, error, detail, contestStatus, timeText, progressPercentage, fetchContestDetail
 } = useContestDetail();
 
 const currentTab = computed(() => route.name as string);
@@ -123,7 +124,6 @@ const durationText = computed(() => {
   return formatDuration(end - start);
 });
 
-//INFO: 后端记得实现比赛未开始时无法请求problem和rank
 // 路由守卫，监听加载状态、比赛状态和当前路由的变化
 watch(
   [() => loading.value, () => contestStatus.value, () => route.name],
@@ -143,6 +143,14 @@ watch(
     }
   },
   { immediate: true }
+);
+
+// 同一路由记录换 contestId 时组件会被复用，必须按新参数重取
+watch(
+  () => route.params.contestId,
+  (cid) => {
+    if (cid) void fetchContestDetail(String(cid));
+  },
 );
 
 onMounted(() => {

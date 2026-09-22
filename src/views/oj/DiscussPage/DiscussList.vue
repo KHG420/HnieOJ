@@ -11,11 +11,6 @@
           <div class="num">{{ total }}</div>
           <div class="label">主题总数</div>
         </div>
-        <n-divider vertical />
-        <div class="stat-item">
-          <div class="num highlight">+12</div>
-          <div class="label">今日新增</div>
-        </div>
       </div>
     </div>
 
@@ -51,6 +46,7 @@
           </div>
 
           <n-spin :show="loading">
+            <n-alert v-if="error" type="error" :bordered="false" style="margin-bottom: 12px">{{ error }}</n-alert>
             <div class="list-wrapper">
               <template v-if="displayList.length > 0">
                 <DiscussionItem 
@@ -130,7 +126,7 @@
 <script setup lang="ts">
 import { onMounted, h } from 'vue';
 import { useRouter } from 'vue-router';
-import { useMessage, NIcon } from 'naive-ui';
+import { NIcon } from 'naive-ui';
 import { 
   SearchOutline as SearchIcon, 
   AddOutline as AddIcon,
@@ -143,13 +139,14 @@ import { useDiscussList } from '@/composables/oj/useDiscussList';
 import { useUserStore } from '@/stores/userStore';
 
 const router = useRouter();
-const message = useMessage();
 const userStore = useUserStore();
 
-const { 
-  loading, displayList, total, page, pageSize, 
+const {
+  loading, error, displayList, total, page, pageSize,
   activeCategory, searchText, sortBy,
-  fetchDiscussions, handlePageChange 
+  fetchDiscussions, handlePageChange,
+  // 排序/分类切换必须触发重查：直接使用 composable 内已重置页码并重新请求的处理器
+  handleSortChange, handleCategoryChange
 } = useDiscussList();
 
 const renderIcon = (icon: any) => () => h(NIcon, null, { default: () => h(icon) });
@@ -159,24 +156,13 @@ const menuOptions = [
   { label: '题目讨论', key: 'Problem', icon: renderIcon(ProblemIcon) }
 ];
 
-// 处理排序切换
-const handleSortChange = (value: string | number) => {
-  sortBy.value = value as 'Latest' | 'Hot';
-};
-
-// 处理分类切换
-const handleCategoryChange = (key: string | number) => {
-  activeCategory.value = key as 'All' | 'Site' | 'Problem';
-};
-
 const handleDetail = (id: number) => {
   router.push(`/discuss/${id}`);
 };
 
-const handleUser = (username: string) => {
-  message.info(`查看用户: ${username}`);
-  message.warning('TODO: 实现根据username查询id的api');
-  router.push(`/user/${username}`);
+const handleUser = (uid: string) => {
+  if (!uid) return;
+  router.push(`/user/${uid}`);
 };
 
 const handleProblem = (pid: string) => {
@@ -194,10 +180,7 @@ onMounted(() => {
 
 <style scoped lang="less">
 .discuss-list-container {
-  // width: 100%;
-  // max-width: 1200px;
   margin: 0 auto;
-  // padding: 0 16px 40px;
   display: flex;
   flex-direction: column;
   gap: 20px;
