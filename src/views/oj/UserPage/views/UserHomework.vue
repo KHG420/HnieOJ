@@ -12,6 +12,7 @@ import { h, ref, watch } from 'vue';
 import { NButton, type DataTableColumns } from 'naive-ui';
 import { useRoute, useRouter } from 'vue-router';
 import { getHomeworks, getUserDetail, type HomeworkListVo } from '@/utils/api';
+import { formatFullTime } from '@/composables/useTime';
 
 const route = useRoute();
 const router = useRouter();
@@ -24,7 +25,7 @@ const pageSize = 10;
 const columns: DataTableColumns<HomeworkListVo> = [
   { title: '作业', key: 'title', render: row => h(NButton, { text: true, type: 'primary', onClick: () => router.push(`/homework/${row.id}`) }, { default: () => row.title }) },
   { title: '题数', key: 'problemCount', width: 80 },
-  { title: '截止时间', key: 'endTime', width: 190 },
+  { title: '截止时间', key: 'endTime', width: 190, render: row => formatFullTime(row.endTime) },
 ];
 let seq = 0;
 watch(() => route.params.uid, () => { page.value = 1; });

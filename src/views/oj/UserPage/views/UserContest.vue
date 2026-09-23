@@ -12,6 +12,7 @@ import { h, ref, watch } from 'vue';
 import { NButton, type DataTableColumns } from 'naive-ui';
 import { useRoute, useRouter } from 'vue-router';
 import { getContests, type ContestListVo } from '@/utils/api';
+import { formatFullTime } from '@/composables/useTime';
 
 const route = useRoute();
 const router = useRouter();
@@ -25,7 +26,7 @@ const columns: DataTableColumns<ContestListVo> = [
   { title: '比赛', key: 'title', render: row => h(NButton, { text: true, type: 'primary', onClick: () => router.push(`/contest/${row.id}`) }, { default: () => row.title }) },
   { title: '赛制', key: 'type', width: 90 },
   { title: '状态', key: 'status', width: 100 },
-  { title: '开始时间', key: 'startTime', width: 190 },
+  { title: '开始时间', key: 'startTime', width: 190, render: row => formatFullTime(row.startTime) },
 ];
 let seq = 0;
 watch(() => route.params.uid, () => { page.value = 1; });

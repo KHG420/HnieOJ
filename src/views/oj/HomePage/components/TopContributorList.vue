@@ -6,7 +6,7 @@
 
     <n-spin :show="loading">
       <n-alert v-if="error" type="error">{{ error }}</n-alert>
-      <n-empty v-else-if="!rows.length" description="暂无社区贡献" style="padding: 40px 0" />
+      <n-empty v-else-if="!rows.length" :description="userStore.isLogin ? '暂无社区贡献' : '登录后查看贡献榜'" style="padding: 40px 0" />
       <n-data-table v-else :columns="columns" :data="rows" :pagination="false" />
     </n-spin>
 
@@ -21,25 +21,32 @@
 
 <script setup lang="ts">
 import { RibbonOutline } from '@vicons/ionicons5';
-import { onMounted, ref } from 'vue';
+import { ref, watch } from 'vue';
 import type { DataTableColumns } from 'naive-ui';
 import BoardCard from '@/components/BoardCard.vue';
 import { getContributionRankings, type ContributionRankVo } from '@/utils/api';
+import { useUserStore } from '@/stores/userStore';
 
+const userStore = useUserStore();
 const rows = ref<ContributionRankVo[]>([]);
 const loading = ref(false);
 const error = ref('');
+let seq = 0;
 const columns: DataTableColumns<ContributionRankVo> = [
   { title: '#', key: 'rank', width: 50 },
   { title: '用户', key: 'username' },
   { title: '贡献', key: 'contribution', width: 80 },
 ];
-onMounted(async () => {
+watch(() => userStore.isLogin, async loggedIn => {
+  const current = ++seq;
+  rows.value = [];
+  error.value = '';
+  if (!loggedIn) { loading.value = false; return; }
   loading.value = true;
-  try { rows.value = (await getContributionRankings()).slice(0, 10); }
-  catch (cause) { error.value = cause instanceof Error ? cause.message : '获取贡献榜失败'; }
-  finally { loading.value = false; }
-});
+  try { const result = await getContributionRankings(); if (current === seq) rows.value = result.slice(0, 10); }
+  catch (cause) { if (current === seq) error.value = cause instanceof Error ? cause.message : '获取贡献榜失败'; }
+  finally { if (current === seq) loading.value = false; }
+}, { immediate: true });
 </script>
 
 <style scoped lang="less">

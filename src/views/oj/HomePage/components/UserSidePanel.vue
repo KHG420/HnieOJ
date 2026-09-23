@@ -79,8 +79,8 @@ watch(() => userStore.userInfo?.id, async uid => {
     getContestRating(uid), getUserContribution(uid),
   ]);
   if (current !== scoreSeq) return;
-  rating.value = ratingResult.status === 'fulfilled' ? (ratingResult.value?.rating ?? 1200) : null;
-  contribution.value = contributionResult.status === 'fulfilled' ? (contributionResult.value?.contribution ?? 0) : null;
+  rating.value = ratingResult.status === 'fulfilled' ? (ratingResult.value?.rating ?? null) : null;
+  contribution.value = contributionResult.status === 'fulfilled' ? (contributionResult.value?.contribution ?? null) : null;
 }, { immediate: true });
 
 // 请求序号：账号切换后作废旧未读数响应，避免串号

@@ -13,6 +13,7 @@ import { NButton, useMessage, type DataTableColumns } from 'naive-ui';
 import { useRoute, useRouter } from 'vue-router';
 import { getFavorites, removeFavorite, type UserFavoriteVo, type FavoriteType } from '@/utils/api';
 import { useUserStore } from '@/stores/userStore';
+import { formatFullTime } from '@/composables/useTime';
 
 const route = useRoute();
 const router = useRouter();
@@ -47,7 +48,7 @@ const remove = async (row: UserFavoriteVo) => {
 const columns: DataTableColumns<UserFavoriteVo> = [
   { title: '类型', key: 'targetType', width: 90, render: row => labels[row.targetType] },
   { title: '内容', key: 'targetId', render: row => h(NButton, { text: true, type: 'primary', onClick: () => router.push(pathFor(row)) }, { default: () => `${labels[row.targetType]} ${row.targetId}` }) },
-  { title: '收藏时间', key: 'gmtCreate', width: 190 },
+  { title: '收藏时间', key: 'gmtCreate', width: 190, render: row => formatFullTime(row.gmtCreate) },
   { title: '操作', key: 'remove', width: 90, render: row => h(NButton, { text: true, type: 'error', loading: pendingIds.value.has(row.id), disabled: pendingIds.value.has(row.id), onClick: () => remove(row) }, { default: () => '取消收藏' }) },
 ];
 let seq = 0;

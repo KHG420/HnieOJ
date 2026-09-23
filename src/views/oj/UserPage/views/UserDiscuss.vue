@@ -12,6 +12,7 @@ import { h, ref, watch } from 'vue';
 import { NButton, type DataTableColumns } from 'naive-ui';
 import { useRoute, useRouter } from 'vue-router';
 import { getDiscussions, type DiscussionListVo } from '@/utils/api';
+import { formatFullTime } from '@/composables/useTime';
 
 const route = useRoute();
 const router = useRouter();
@@ -25,7 +26,7 @@ const columns: DataTableColumns<DiscussionListVo> = [
   { title: '标题', key: 'title', render: row => h(NButton, { text: true, type: 'primary', onClick: () => router.push(`/discuss/${row.id}`) }, { default: () => row.title }) },
   { title: '分类', key: 'category', width: 120 },
   { title: '回复', key: 'answerCount', width: 80 },
-  { title: '发布时间', key: 'gmtCreate', width: 190 },
+  { title: '发布时间', key: 'gmtCreate', width: 190, render: row => formatFullTime(row.gmtCreate) },
 ];
 let seq = 0;
 watch(() => route.params.uid, () => { page.value = 1; });
