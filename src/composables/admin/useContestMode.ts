@@ -36,6 +36,7 @@ export function useContestMode() {
   const loading = ref(false);
   const systemTime = ref('--');
   const featured = ref<FeaturedContestVo | null>(null);
+  const featuredError = ref(false);
   const online = ref(false);
   const latencyMs = ref<number | null>(null);
   const currentMs = ref(Date.now());
@@ -93,9 +94,9 @@ export function useContestMode() {
   const syncFeatured = async () => {
     try {
       const value = await getFeaturedContest();
-      if (!disposed) featured.value = value;
+      if (!disposed) { featured.value = value; featuredError.value = false; }
     } catch {
-      if (!disposed) featured.value = null;
+      if (!disposed) featuredError.value = true;
     }
   };
 
@@ -123,6 +124,7 @@ export function useContestMode() {
   return {
     loading,
     featured,
+    featuredError,
     online,
     latencyMs,
     countdown,

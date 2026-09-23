@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { watch } from 'vue';
 import type { DataTableColumns } from 'naive-ui';
 import { useRoute } from 'vue-router';
 import { useContestScoreboard } from '@/composables/oj/useContestScoreboard';
@@ -25,9 +25,9 @@ const columns: DataTableColumns<ContestRankVo> = [
   { title: '罚时（分钟）', key: 'penaltyMinutes', width: 130 },
 ];
 
-onMounted(() => {
-  void fetchScoreboard(route.params.contestId as string);
-});
+watch(() => route.params.contestId, id => {
+  if (typeof id === 'string') void fetchScoreboard(id);
+}, { immediate: true });
 </script>
 
 <style scoped lang="less">

@@ -10,6 +10,7 @@ export function useFavorite(type: FavoriteType, getId: () => string) {
   watch(getId, async id => {
     const current = ++seq;
     saved.value = false;
+    loading.value = false;
     if (!id) return;
     try {
       const value = await checkFavorite(type, id);
@@ -21,15 +22,19 @@ export function useFavorite(type: FavoriteType, getId: () => string) {
   const toggle = async () => {
     const id = getId();
     if (!id || loading.value) return;
+    const current = ++seq;
+    const wasSaved = saved.value;
     loading.value = true;
     try {
-      if (saved.value) await removeFavorite(type, id);
+      if (wasSaved) await removeFavorite(type, id);
       else await addFavorite(type, id);
-      saved.value = !saved.value;
-      message.success(saved.value ? '已收藏' : '已取消收藏');
+      if (current === seq && id === getId()) {
+        saved.value = !wasSaved;
+        message.success(saved.value ? '已收藏' : '已取消收藏');
+      }
     } catch (cause) {
-      message.error(cause instanceof Error ? cause.message : '收藏操作失败');
-    } finally { loading.value = false; }
+      if (current === seq && id === getId()) message.error(cause instanceof Error ? cause.message : '收藏操作失败');
+    } finally { if (current === seq) loading.value = false; }
   };
   return { saved, loading, toggle };
 }

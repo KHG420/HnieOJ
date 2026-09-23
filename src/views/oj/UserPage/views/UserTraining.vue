@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { computed, h, ref, watch } from 'vue';
-import { NButton, type DataTableColumns } from 'naive-ui';
+import { NButton, useMessage, type DataTableColumns } from 'naive-ui';
 import { useRoute, useRouter } from 'vue-router';
 import { getFavorites, getTrainingInformation, type TrainingDetailVo } from '@/utils/api';
 import { useUserStore } from '@/stores/userStore';
@@ -17,6 +17,7 @@ import { useUserStore } from '@/stores/userStore';
 const route = useRoute();
 const router = useRouter();
 const store = useUserStore();
+const message = useMessage();
 const isSelf = computed(() => String(route.params.uid) === store.userInfo?.id);
 const rows = ref<TrainingDetailVo[]>([]);
 const loading = ref(false);
@@ -35,8 +36,12 @@ watch(isSelf, async allowed => {
   error.value = '';
   try {
     const favorites = await getFavorites('training');
-    const details = await Promise.all(favorites.map(item => getTrainingInformation(item.targetId)));
-    if (current === seq) rows.value = details;
+    const details = await Promise.allSettled(favorites.map(item => getTrainingInformation(item.targetId)));
+    if (current === seq) {
+      rows.value = details.filter((result): result is PromiseFulfilledResult<TrainingDetailVo> => result.status === 'fulfilled').map(result => result.value);
+      const skipped = details.length - rows.value.length;
+      if (skipped) message.warning(`${skipped} 个题单详情加载失败，已跳过`);
+    }
   } catch (cause) {
     if (current === seq) error.value = cause instanceof Error ? cause.message : '获取收藏题单失败';
   } finally { if (current === seq) loading.value = false; }

@@ -40,8 +40,8 @@
     <main class="main-content">
       <n-spin :show="loading">
         <div class="title-section">
-          <h1 class="main-title">{{ featured?.title || '暂无公开比赛' }}</h1>
-          <p class="subtitle">{{ featured ? `${featured.type} · ${featured.status === 'running' ? '正在进行' : '即将开始'}` : '请关注即将发布的赛事' }}</p>
+          <h1 class="main-title">{{ featured?.title || (featuredError ? '比赛信息暂时不可用' : '暂无公开比赛') }}</h1>
+          <p class="subtitle">{{ featured ? `${featured.type} · ${featured.status === 'running' ? '正在进行' : '即将开始'}` : featuredError ? '请稍后重试' : '请关注即将发布的赛事' }}</p>
         </div>
 
         <div class="timer-section">
@@ -49,7 +49,7 @@
             <span>{{ featured.status === 'running' ? '距离结束' : '距离开始' }}</span>
             <strong>{{ countdown }}</strong>
           </div>
-          <n-empty v-else description="当前没有进行中或即将开始的公开比赛" />
+          <n-empty v-else :description="featuredError ? '比赛信息加载失败' : '当前没有进行中或即将开始的公开比赛'" />
         </div>
 
         <div class="action-section">
@@ -100,7 +100,7 @@ import { NSpin, NIcon, NEmpty } from 'naive-ui';
 import { computed } from 'vue';
 import { useUserStore } from '@/stores/userStore';
 
-const { loading, featured, online, latencyMs, countdown, systemTime } = useContestMode();
+const { loading, featured, featuredError, online, latencyMs, countdown, systemTime } = useContestMode();
 const userStore = useUserStore();
 const entryPath = computed(() => userStore.isLogin
   ? featured.value ? `/contest/${featured.value.id}` : '/contests'

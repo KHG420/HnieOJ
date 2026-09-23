@@ -565,6 +565,7 @@ export function getUserSubmissionSummary(uid: string): Promise<UserSubmissionSum
 
 export interface AdminSubmissionDashboardVo {
   totalSubmissions: number
+  reportDate?: string
   daily: Array<{ day: string; submissions: number }>
   statuses: Array<{ status: number; submissions: number }>
   hotProblems: Array<{ problemCode: string; submissions: number }>

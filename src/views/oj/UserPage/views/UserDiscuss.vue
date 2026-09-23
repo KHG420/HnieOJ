@@ -28,6 +28,7 @@ const columns: DataTableColumns<DiscussionListVo> = [
   { title: '发布时间', key: 'gmtCreate', width: 190 },
 ];
 let seq = 0;
+watch(() => route.params.uid, () => { page.value = 1; });
 watch(() => [route.params.uid, page.value] as const, async ([uid, currentPage]) => {
   const current = ++seq;
   loading.value = true;

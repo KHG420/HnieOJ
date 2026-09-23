@@ -44,7 +44,7 @@
           <n-card :bordered="false" class="problem-card">
             
             <div v-if="isSubmitMode">
-              <ProblemSubmit :problem-code="problem.problemCode" :contest-id="(route.query.cid as string) || undefined" :homework-id="(route.query.hid as string) || undefined" />
+              <ProblemSubmit :problem-code="problem.problemCode" :contest-id="queryId(route.query.cid)" :homework-id="queryId(route.query.hid)" />
             </div>
 
             <div v-else>
@@ -276,6 +276,8 @@ interface Problem {
 }
 
 const route = useRoute();
+const queryId = (value: string | null | (string | null)[] | undefined): string | undefined =>
+  (typeof value === 'string' ? value : Array.isArray(value) ? value.find(item => typeof item === 'string') : undefined) || undefined;
 const { saved: isFavorite, loading: favoriteLoading, toggle: toggleFavorite } = useFavorite('problem', () => String(route.params.id ?? ''));
 const router = useRouter();
 const message = useMessage();
@@ -372,7 +374,7 @@ const fetchProblemDetail = async (problemCode: string) => {
   loading.value = true;
   error.value = null;
   try {
-    const detail = await getProblemDetail(problemCode, (route.query.cid as string) || undefined);
+    const detail = await getProblemDetail(problemCode, queryId(route.query.cid));
     if (seq !== detailSeq) return;
     problem.value = {
       problemCode: detail.problemCode,

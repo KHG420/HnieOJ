@@ -95,8 +95,10 @@ defineOptions({ name: 'AdminDashboardPage' })
 const { error, totals, failed, loading, submissionStats, favoriteTrainings, fetchData } = useDashboard()
 const trendOption = computed(() => {
   const counts = new Map(submissionStats.value?.daily.map(item => [item.day, item.submissions]) ?? [])
+  const reportDate = submissionStats.value?.reportDate ?? submissionStats.value?.daily.at(-1)?.day
   const days = Array.from({ length: 7 }, (_, index) => {
-    const date = new Date()
+    if (!reportDate) return ''
+    const date = new Date(`${reportDate}T12:00:00`)
     date.setDate(date.getDate() - 6 + index)
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
   })

@@ -27,6 +27,7 @@ const columns: DataTableColumns<HomeworkListVo> = [
   { title: '截止时间', key: 'endTime', width: 190 },
 ];
 let seq = 0;
+watch(() => route.params.uid, () => { page.value = 1; });
 watch(() => [route.params.uid, page.value] as const, async ([uid, currentPage]) => {
   const current = ++seq;
   loading.value = true;

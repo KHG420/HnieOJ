@@ -5,17 +5,22 @@ export function useContestScoreboard() {
   const loading = ref(false);
   const rows = ref<ContestRankVo[]>([]);
   const error = ref('');
+  let seq = 0;
 
   const fetchScoreboard = async (cid: string) => {
+    const current = ++seq;
     loading.value = true;
     error.value = '';
     try {
-      rows.value = await getContestScoreboard(cid);
+      const result = await getContestScoreboard(cid);
+      if (current === seq) rows.value = result;
     } catch (cause) {
-      rows.value = [];
-      error.value = cause instanceof Error ? cause.message : '获取排行榜失败';
+      if (current === seq) {
+        rows.value = [];
+        error.value = cause instanceof Error ? cause.message : '获取排行榜失败';
+      }
     } finally {
-      loading.value = false;
+      if (current === seq) loading.value = false;
     }
   };
 

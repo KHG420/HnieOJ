@@ -89,10 +89,16 @@ export const useDashboard = () => {
     const current = ++fetchSeq
     loading.value = true
     error.value = null
+    favoriteTrainings.value = []
+    void getTopFavoriteTrainings().then(value => {
+      if (current === fetchSeq) favoriteTrainings.value = value
+    }).catch(() => {
+      if (current === fetchSeq) error.value = [error.value, '题单收藏统计加载失败'].filter(Boolean).join('；')
+    })
     try {
-      const [results, [statsResult, favoritesResult]] = await Promise.all([
+      const [results, statsResult] = await Promise.all([
         Promise.allSettled(metricLoaders.map(metric => metric.load())),
-        Promise.allSettled([getAdminSubmissionDashboard(), getTopFavoriteTrainings()] as const),
+        Promise.allSettled([getAdminSubmissionDashboard()]).then(results => results[0]!),
       ])
       if (current !== fetchSeq) return
       const nextTotals = emptyTotals()
@@ -114,14 +120,8 @@ export const useDashboard = () => {
       // 整体覆盖：失败项保持 null，绝不沿用旧成功值冒充新状态
       totals.value = nextTotals
       failed.value = nextFailed
-      if (failedLabels.length > 0) {
-        error.value = `${failedLabels.join('、')}数据加载失败，请重试`
-      }
+      if (failedLabels.length > 0) error.value = [error.value, `${failedLabels.join('、')}数据加载失败，请重试`].filter(Boolean).join('；')
       submissionStats.value = statsResult.status === 'fulfilled' ? statsResult.value : null
-      favoriteTrainings.value = favoritesResult.status === 'fulfilled' ? favoritesResult.value : []
-      if (favoritesResult.status === 'rejected') {
-        error.value = [error.value, '图表或题单收藏统计加载失败'].filter(Boolean).join('；')
-      }
     } finally {
       if (current === fetchSeq) loading.value = false
     }

@@ -191,7 +191,7 @@ const loadTeachers = async () => {
     teacherClasses.value = classes;
     teacherNames.value = names;
   } catch (cause) {
-    listError.value = cause instanceof Error ? cause.message : '教师选项加载失败';
+    if (current === filterSeq) listError.value = cause instanceof Error ? cause.message : '教师选项加载失败';
   } finally { teachersLoading.value = false; }
 };
 

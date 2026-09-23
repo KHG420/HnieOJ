@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import type { ContestDetail } from '@/composables/oj/useContestDetail';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useMessage } from 'naive-ui';
 import { getContestRegistration, registerContest } from '@/utils/api';
 
@@ -29,11 +29,16 @@ const registered = ref(false);
 const loading = ref(false);
 const registering = ref(false);
 const error = ref('');
-const ended = computed(() => !!props.detail.endTime && Date.now() >= new Date(props.detail.endTime).getTime());
+const now = ref(Date.now());
+const ended = computed(() => !!props.detail.endTime && now.value >= new Date(props.detail.endTime).getTime());
+let timer: ReturnType<typeof setInterval> | null = null;
+onMounted(() => { timer = setInterval(() => { now.value = Date.now(); }, 1000); });
+onUnmounted(() => { if (timer !== null) clearInterval(timer); });
 let seq = 0;
 watch(() => props.detail.id, async id => {
   const current = ++seq;
   registered.value = false;
+  registering.value = false;
   if (!id) return;
   loading.value = true;
   error.value = '';
@@ -45,14 +50,19 @@ watch(() => props.detail.id, async id => {
   } finally { if (current === seq) loading.value = false; }
 }, { immediate: true });
 const register = async () => {
+  const id = props.detail.id;
+  if (!id || registering.value) return;
+  const current = ++seq;
   registering.value = true;
   try {
-    await registerContest(props.detail.id);
-    registered.value = true;
-    message.success('报名成功');
+    await registerContest(id);
+    if (current === seq && id === props.detail.id) {
+      registered.value = true;
+      message.success('报名成功');
+    }
   } catch (cause) {
-    message.error(cause instanceof Error ? cause.message : '报名失败');
-  } finally { registering.value = false; }
+    if (current === seq && id === props.detail.id) message.error(cause instanceof Error ? cause.message : '报名失败');
+  } finally { if (current === seq) registering.value = false; }
 };
 </script>
 
