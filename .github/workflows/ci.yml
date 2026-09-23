@@ -1,10 +1,10 @@
 # HnieOJ 前端 CI：Lint / 编码检查 / 类型检查 / 生产构建 + 密钥与依赖扫描。
-# 触发：push 到 main/develop，以及指向 main/develop 的 PR（fork PR 读取基线分支上的本文件）。
+# 触发：push 到 main/develop/dev，以及指向 main/develop 的 PR（fork PR 读取基线分支上的本文件）。
 name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, dev]
   pull_request:
     branches: [main, develop]
 

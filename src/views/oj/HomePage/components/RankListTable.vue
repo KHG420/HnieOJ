@@ -4,7 +4,11 @@
       <n-icon size="22"><BarChartOutline /></n-icon>
     </template>
 
-    <n-empty :description="reason" style="padding: 40px 0" />
+    <n-spin :show="loading">
+      <n-alert v-if="error" type="error">{{ error }}</n-alert>
+      <n-empty v-else-if="!rows.length" description="本月暂无解题记录" style="padding: 40px 0" />
+      <n-data-table v-else :columns="columns" :data="rows" :pagination="false" />
+    </n-spin>
 
     <div class="card-footer">
       <div></div>
@@ -17,10 +21,27 @@
 
 <script setup lang="ts">
 import { BarChartOutline } from '@vicons/ionicons5';
+import { onMounted, ref } from 'vue';
+import type { DataTableColumns } from 'naive-ui';
 import BoardCard from '@/components/BoardCard.vue';
+import { getSolveRankings, type UserSolveRankVo } from '@/utils/api';
 
-// 后端暂无排名/评分/贡献榜接口，明确标注暂未开放，不展示假数据。
-const reason = '暂未开放：后端暂未提供排行榜接口';
+const rows = ref<UserSolveRankVo[]>([]);
+const loading = ref(false);
+const error = ref('');
+const columns: DataTableColumns<UserSolveRankVo> = [
+  { title: '#', key: 'rank', width: 50 },
+  { title: '用户', key: 'username' },
+  { title: '本月解决', key: 'monthlySolved', width: 100 },
+];
+onMounted(async () => {
+  loading.value = true;
+  try {
+    rows.value = (await getSolveRankings('month')).filter(row => row.monthlySolved > 0).slice(0, 10);
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : '获取月榜失败';
+  } finally { loading.value = false; }
+});
 </script>
 
 <style scoped lang="less">

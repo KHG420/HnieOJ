@@ -39,7 +39,7 @@ export function useStatusList() {
   // 筛选表单
   const filters = ref<StatusFilters>({
     problem: (route.query.pid as string) || '',
-    user: '',
+    user: (route.query.uid as string) || '',
     language: null,
     status: null,
   });
@@ -113,6 +113,12 @@ export function useStatusList() {
 
   watch(() => route.query.pid, (newPid) => {
     filters.value.problem = (newPid as string) || '';
+    page.value = 1;
+    handleRefresh();
+  });
+
+  watch(() => route.query.uid, (newUid) => {
+    filters.value.user = (newUid as string) || '';
     page.value = 1;
     handleRefresh();
   });
